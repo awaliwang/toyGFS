@@ -45,11 +45,24 @@ func getWriteReplicas(writeFile File) []byte {
 	return body
 }
 
+func sendToChunkServers(address string) int {
+	fmt.Println("wrote to port " + address)
+	return 0
+}
+
 func main() {
 	writeFile := create("file3", 3)
 
-	chunkLocations := getWriteReplicas(writeFile)
+	replicaLocationBytes := getWriteReplicas(writeFile)
 
-	fmt.Println(chunkLocations)
-
+	var s map[int][]string
+	if err := json.Unmarshal(replicaLocationBytes, &s); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	for _, chunk := range s {
+		for _, port := range chunk {
+			sendToChunkServers(port)
+		}
+	}
 }
